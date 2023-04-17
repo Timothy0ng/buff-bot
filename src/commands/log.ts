@@ -21,6 +21,9 @@ export class UserCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    return interaction.reply({ content: "Not implemented yet!" });
+    const username = interaction.user.username;
+    return interaction.reply({
+      content: `Well done! @${username} has just completed the following: \n`
+    });
   }
 }
