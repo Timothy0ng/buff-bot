@@ -1,5 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command } from "@sapphire/framework";
+import { TextChannel } from "discord.js";
 
 @ApplyOptions<Command.Options>({
   description: "Log your exercise!"
@@ -12,23 +13,29 @@ export class UserCommand extends Command {
         .setDescription(this.description)
         .addStringOption((option) =>
           option
-            .setName("msg_id")
-            .setDescription("Message ID of exercise")
-            .setMinLength(16)
-            .setMaxLength(20)
+            .setName("channel_id")
+            .setDescription("ID of the channel containing the message")
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option.setName("msg_id").setDescription("ID of the message").setRequired(true)
         )
     );
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const messageId: string | null = interaction.options.getString("msg_id");
+    const channelId: string = interaction.options.getString("channel_id", true);
+    const messageId: string = interaction.options.getString("msg_id", true);
 
-    if (!messageId) {
-      return interaction.reply({ content: "Please provide a valid message ID", ephemeral: true });
+    const channel = interaction.guild?.channels.cache.get(channelId) as TextChannel;
+    if (!channel) {
+      return interaction.reply({
+        content: "Could not find the specified channel",
+        ephemeral: true
+      });
     }
 
-    const message = await interaction.channel?.messages.fetch(messageId);
-
+    const message = await channel.messages.fetch(messageId);
     if (!message) {
       return interaction.reply({
         content: "Could not find the specified message",
