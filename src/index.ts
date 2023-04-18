@@ -1,6 +1,8 @@
 import "./lib/setup";
 import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits } from "discord.js";
+import reminderJob from "./reminder";
+import { scheduleJob } from "node-schedule";
 
 const client = new SapphireClient({
   logger: {
@@ -14,11 +16,17 @@ const client = new SapphireClient({
   loadMessageCommandListeners: false
 });
 
+const remind = scheduleJob("16 * * *", () => {
+  reminderJob(client);
+});
+
 const main = async () => {
   try {
     client.logger.info("Logging in");
     await client.login();
     client.logger.info("logged in");
+
+    remind.invoke();
   } catch (error) {
     client.logger.fatal(error);
     client.destroy();

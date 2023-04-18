@@ -44,9 +44,9 @@ export class UserCommand extends Command {
     }
 
     const content = message.content;
-    const userId = message.author.username;
+    const userId = message.author.id;
     return interaction.reply({
-      content: `Well done! @${userId} has completed the following: \n ${content}`
+      content: `Well done! <@${userId}> has completed the following: \n ${content}`
     });
   }
 }
