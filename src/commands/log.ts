@@ -2,6 +2,9 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { Command } from "@sapphire/framework";
 import { Guild, TextChannel } from "discord.js";
 
+import { db } from "../db";
+import { BIGINT_22, BIGINT_22_BITS } from "../lib/constants";
+
 @ApplyOptions<Command.Options>({
   description: "Log your exercise!"
 })
@@ -28,12 +31,12 @@ export class UserCommand extends Command {
       });
     }
 
-    const channelId: string = interaction.options.getString("channel_id") || interaction.channelId;
-    const messageId: string = interaction.options.getString("msg_id", true);
+    const channel_id: string = interaction.options.getString("channel_id") || interaction.channelId;
+    const message_id: string = interaction.options.getString("msg_id", true);
 
     // Already checked for guild above
     const guild = interaction.guild as Guild;
-    const channel = guild.channels.cache.get(channelId) as TextChannel;
+    const channel = guild.channels.cache.get(channel_id) as TextChannel;
     if (!channel) {
       return interaction.reply({
         content: "Could not find the specified channel",
@@ -41,7 +44,7 @@ export class UserCommand extends Command {
       });
     }
 
-    const message = await channel.messages.fetch(messageId);
+    const message = await channel.messages.fetch(message_id);
     if (!message) {
       return interaction.reply({
         content: "Could not find the specified message",
@@ -49,9 +52,21 @@ export class UserCommand extends Command {
       });
     }
 
-    const userId = message.author.id;
+    const user_id = message.author.id;
+    const id = BigInt(message.id);
+    // First 42 bits of message ID
+    const message_timestamp = id >> BIGINT_22;
+    // Remaining bits
+    const message_suffix = id & BIGINT_22_BITS;
+    await db("log").insert({
+      message_timestamp,
+      message_suffix,
+      user_id,
+      channel_id
+    });
+
     return interaction.reply({
-      content: `<@${userId}> has completed the following: https://discord.com/channels/${guild.id}/${channelId}/${messageId}`
+      content: `<@${user_id}> has completed the following: https://discord.com/channels/${guild.id}/${channel_id}/${message_id}`
     });
   }
 }
