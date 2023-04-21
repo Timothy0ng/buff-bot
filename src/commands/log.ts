@@ -12,10 +12,10 @@ export class UserCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
         .addStringOption((option) =>
-          option.setName("channel_id").setDescription("ID of the channel containing the message")
+          option.setName("msg_id").setDescription("ID of the message").setRequired(true)
         )
         .addStringOption((option) =>
-          option.setName("msg_id").setDescription("ID of the message").setRequired(true)
+          option.setName("channel_id").setDescription("ID of the channel containing the message")
         )
     );
   }

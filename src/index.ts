@@ -3,6 +3,7 @@ import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits } from "discord.js";
 import { scheduleJob } from "node-schedule";
 
+import "./db/setup";
 import reminderJob from "./reminder";
 
 const client = new SapphireClient({
