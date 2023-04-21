@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command } from "@sapphire/framework";
-import { TextChannel } from "discord.js";
+import { Guild, TextChannel } from "discord.js";
 
 @ApplyOptions<Command.Options>({
   description: "Log your exercise!"
@@ -21,10 +21,19 @@ export class UserCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+    if (!interaction.inGuild()) {
+      return interaction.reply({
+        content: "This command can only be used in a server",
+        ephemeral: true
+      });
+    }
+
     const channelId: string = interaction.options.getString("channel_id") || interaction.channelId;
     const messageId: string = interaction.options.getString("msg_id", true);
 
-    const channel = interaction.guild?.channels.cache.get(channelId) as TextChannel;
+    // Already checked for guild above
+    const guild = interaction.guild as Guild;
+    const channel = guild.channels.cache.get(channelId) as TextChannel;
     if (!channel) {
       return interaction.reply({
         content: "Could not find the specified channel",
@@ -40,10 +49,9 @@ export class UserCommand extends Command {
       });
     }
 
-    const content = message.content;
     const userId = message.author.id;
     return interaction.reply({
-      content: `Well done! <@${userId}> has completed the following: \n ${content}`
+      content: `<@${userId}> has completed the following: https://discord.com/channels/${guild.id}/${channelId}/${messageId}`
     });
   }
 }
