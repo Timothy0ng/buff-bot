@@ -12,10 +12,7 @@ export class UserCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
         .addStringOption((option) =>
-          option
-            .setName("channel_id")
-            .setDescription("ID of the channel containing the message")
-            .setRequired(true)
+          option.setName("channel_id").setDescription("ID of the channel containing the message")
         )
         .addStringOption((option) =>
           option.setName("msg_id").setDescription("ID of the message").setRequired(true)
@@ -24,7 +21,7 @@ export class UserCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const channelId: string = interaction.options.getString("channel_id", true);
+    const channelId: string = interaction.options.getString("channel_id") || interaction.channelId;
     const messageId: string = interaction.options.getString("msg_id", true);
 
     const channel = interaction.guild?.channels.cache.get(channelId) as TextChannel;
