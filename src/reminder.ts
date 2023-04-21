@@ -1,5 +1,5 @@
 import { SapphireClient } from "@sapphire/framework";
-import { TextChannel, DMChannel } from "discord.js";
+import { DMChannel, TextChannel } from "discord.js";
 
 const reminderJob = async (client: SapphireClient) => {
   // This function will be executed at 11:00 AM every day

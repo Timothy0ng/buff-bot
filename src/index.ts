@@ -1,8 +1,9 @@
 import "./lib/setup";
 import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits } from "discord.js";
-import reminderJob from "./reminder";
 import { scheduleJob } from "node-schedule";
+
+import reminderJob from "./reminder";
 
 const client = new SapphireClient({
   logger: {
