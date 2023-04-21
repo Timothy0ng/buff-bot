@@ -15,14 +15,17 @@
     "@sapphire/plugin-logger": "^3.0.3",
     "@sapphire/utilities": "^3.11.1",
     "@skyra/env-utilities": "^1.1.0",
+    "better-sqlite3": "^8.3.0",
     "colorette": "^2.0.19",
     "discord.js": "^14.9.0",
+    "knex": "^2.4.2",
     "node-schedule": "^2.1.1"
   },
   "devDependencies": {
     "@sapphire/cli": "^1.5.0",
     "@sapphire/prettier-config": "^1.4.5",
     "@sapphire/ts-config": "^4.0.0",
+    "@types/better-sqlite3": "^7.6.4",
     "@types/eslint": "^8.37.0",
     "@types/node": "^18.15.11",
     "@types/node-schedule": "^2",

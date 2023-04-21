@@ -26,3 +26,6 @@ package-lock.json
 # Environment variables
 .env
 .env.*
+
+# Database
+db.sqlite
