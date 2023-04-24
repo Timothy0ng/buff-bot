@@ -61,3 +61,7 @@ function getGuildInfo(guild: Guild | null) {
   if (guild === null) return "Direct Messages";
   return `${guild.name}[${cyan(guild.id)}]`;
 }
+
+export function assertType<T>(_: unknown): asserts _ is T {
+  //
+}

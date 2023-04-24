@@ -1,6 +1,10 @@
+import type { GuildTextBasedChannel } from "discord.js";
+
 import { Command, RegisterSubCommand } from "@kaname-png/plugin-subcommands-advanced";
+import { RecurrenceRule, scheduleJob } from "node-schedule";
 
 import { db } from "../../db";
+import { assertType } from "../../lib/utils";
 
 import { REMINDERS } from ".";
 
@@ -15,6 +19,19 @@ const dow_mapping: Record<DayOfWeek, number> = {
   sat: 6,
   sun: 7
 };
+
+type ScheduleReminderParams = {
+  interaction: Command.ChatInputInteraction;
+  user_id: string;
+};
+function scheduleReminder({ interaction, user_id }: ScheduleReminderParams) {
+  return async function () {
+    const channel = (await interaction.client.channels.fetch(
+      interaction.channelId
+    )) as GuildTextBasedChannel;
+    await channel.send({ content: `<@${user_id}> Exercise!` });
+  };
+}
 
 @RegisterSubCommand(REMINDERS, (subcommand) => {
   subcommand //
@@ -44,9 +61,11 @@ export class SelfCommand extends Command {
     if (!dow) return interaction.reply({ content: "Invalid day of week", ephemeral: true });
 
     const [h, m] = hhmm.split(":").map((x) => parseInt(x));
-    if (!Number.isInteger(h) || (h as number) < 0 || (h as number) > 23)
+    assertType<number>(h);
+    assertType<number>(m);
+    if (!Number.isInteger(h) || h < 0 || h > 23)
       return interaction.reply({ content: "Invalid hour", ephemeral: true });
-    if (!Number.isInteger(m) || (m as number) < 0 || (m as number) > 59)
+    if (!Number.isInteger(m) || m < 0 || m > 59)
       return interaction.reply({ content: "Invalid minute", ephemeral: true });
 
     const guild_id = interaction.guildId;
@@ -57,6 +76,15 @@ export class SelfCommand extends Command {
     const id = result[0]?.id;
     if (!id) return interaction.reply({ content: "Failed to add reminder", ephemeral: true });
 
-    return interaction.reply(`Reminder added for ${time}`);
+    const rule = new RecurrenceRule();
+    rule.hour = h;
+    rule.minute = m;
+    rule.dayOfWeek = dow;
+    scheduleJob(rule, scheduleReminder({ interaction, user_id }));
+
+    return interaction.reply({
+      content: `Reminder \`${id}\` added for \`${time}\``,
+      ephemeral: true
+    });
   }
 }
