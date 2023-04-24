@@ -1,5 +1,7 @@
 import { Command, RegisterSubCommand } from "@kaname-png/plugin-subcommands-advanced";
 
+import { db } from "../../db";
+
 import { REMINDERS } from ".";
 
 type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
@@ -28,17 +30,33 @@ const dow_mapping: Record<DayOfWeek, number> = {
 })
 export class SelfCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputInteraction) {
-    const time = interaction.options.getString("time", true);
-    const [dow, hhmm] = time.split(" ") as [DayOfWeek, HhMm];
-    const dow_num = dow_mapping[dow.toLowerCase() as DayOfWeek];
-    if (!dow_num) return interaction.reply({ content: "Invalid day of week", ephemeral: true });
+    if (!interaction.inGuild()) {
+      return interaction.reply({
+        content: "This command can only be used in a server",
+        ephemeral: true
+      });
+    }
 
-    const [hours, minutes] = hhmm.split(":").map((x) => parseInt(x));
-    if (!Number.isInteger(hours) || (hours as number) < 0 || (hours as number) > 23)
+    const time = interaction.options.getString("time", true);
+
+    const [dow_str, hhmm] = time.split(" ") as [DayOfWeek, HhMm];
+    const dow = dow_mapping[dow_str.toLowerCase() as DayOfWeek];
+    if (!dow) return interaction.reply({ content: "Invalid day of week", ephemeral: true });
+
+    const [h, m] = hhmm.split(":").map((x) => parseInt(x));
+    if (!Number.isInteger(h) || (h as number) < 0 || (h as number) > 23)
       return interaction.reply({ content: "Invalid hour", ephemeral: true });
-    if (!Number.isInteger(minutes) || (minutes as number) < 0 || (minutes as number) > 59)
+    if (!Number.isInteger(m) || (m as number) < 0 || (m as number) > 59)
       return interaction.reply({ content: "Invalid minute", ephemeral: true });
 
-    return interaction.reply("Test");
+    const guild_id = interaction.guildId;
+    const user_id = interaction.user.id;
+    const result = (await db("reminder")
+      .returning("id")
+      .insert({ guild_id, user_id, dow, h, m })) as { id: number }[];
+    const id = result[0]?.id;
+    if (!id) return interaction.reply({ content: "Failed to add reminder", ephemeral: true });
+
+    return interaction.reply(`Reminder added for ${time}`);
   }
 }
