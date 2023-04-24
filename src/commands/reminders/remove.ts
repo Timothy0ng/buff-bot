@@ -1,8 +1,8 @@
 import { Command, RegisterSubCommand } from "@kaname-png/plugin-subcommands-advanced";
 
 import { db } from "../../db";
-
-import { REMINDERS } from ".";
+import { REMINDERS } from "../../lib/constants";
+import { parseTime } from "../../lib/utils";
 
 @RegisterSubCommand(REMINDERS, (subcommand) => {
   subcommand //
@@ -30,13 +30,20 @@ export class SelfCommand extends Command {
 
     const guild_id = interaction.guildId;
     const user_id = interaction.user.id;
-    const result = await db("reminder").where({ guild_id, user_id, id }).delete();
-    console.log(result);
-    if (!result)
+    const select_result = await db("reminder")
+      .select(["dow", "h", "m"])
+      .where({ guild_id, user_id, id });
+    const reminder = select_result[0];
+    if (!reminder)
       return interaction.reply({ content: `Failed to remove Reminder ${id}`, ephemeral: true });
+    await db("reminder").where({ guild_id, user_id, id }).delete();
 
     return interaction.reply({
-      content: `Removed Reminder \`${id}\``,
+      content: `Removed Reminder ${id}: ${parseTime(
+        reminder.dow as BuffBot.DayOfWeek,
+        reminder.h,
+        reminder.m
+      )}`,
       ephemeral: true
     });
   }

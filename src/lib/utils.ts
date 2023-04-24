@@ -9,6 +9,8 @@ import {
 } from "@sapphire/framework";
 import { cyan } from "colorette";
 
+import { DOW_MAPPING } from "./constants";
+
 export function logSuccessCommand(
   payload:
     | ContextMenuCommandSuccessPayload
@@ -64,4 +66,11 @@ function getGuildInfo(guild: Guild | null) {
 
 export function assertType<T>(_: unknown): asserts _ is T {
   //
+}
+
+function pad2Zero(num: number) {
+  return num.toString().padStart(2, "0");
+}
+export function parseTime(dow: BuffBot.DayOfWeek, h: number, m: number) {
+  return `\`${DOW_MAPPING[dow]} ${pad2Zero(h)}:${pad2Zero(m)}\``;
 }

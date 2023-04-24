@@ -4,21 +4,8 @@ import { Command, RegisterSubCommand } from "@kaname-png/plugin-subcommands-adva
 import { RecurrenceRule, scheduleJob } from "node-schedule";
 
 import { db } from "../../db";
-import { assertType } from "../../lib/utils";
-
-import { REMINDERS } from ".";
-
-type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-type HhMm = `${number}:${number}`;
-const dow_mapping: Record<DayOfWeek, number> = {
-  mon: 1,
-  tue: 2,
-  wed: 3,
-  thu: 4,
-  fri: 5,
-  sat: 6,
-  sun: 7
-};
+import { DOW_MAPPING, REMINDERS } from "../../lib/constants";
+import { assertType, parseTime } from "../../lib/utils";
 
 type ScheduleReminderParams = {
   interaction: Command.ChatInputInteraction;
@@ -56,8 +43,10 @@ export class SelfCommand extends Command {
 
     const time = interaction.options.getString("time", true);
 
-    const [dow_str, hhmm] = time.split(" ") as [DayOfWeek, HhMm];
-    const dow = dow_mapping[dow_str.toLowerCase() as DayOfWeek];
+    const [dow_str, hhmm] = time.split(" ");
+    if (!dow_str || !hhmm) return interaction.reply({ content: "Invalid time", ephemeral: true });
+
+    const dow = DOW_MAPPING[dow_str.toLowerCase() as BuffBot.DayOfWeekStr] as BuffBot.DayOfWeek;
     if (!dow) return interaction.reply({ content: "Invalid day of week", ephemeral: true });
 
     const [h, m] = hhmm.split(":").map((x) => parseInt(x));
@@ -83,7 +72,7 @@ export class SelfCommand extends Command {
     scheduleJob(rule, scheduleReminder({ interaction, user_id }));
 
     return interaction.reply({
-      content: `Reminder \`${id}\` added for \`${time}\``,
+      content: `Added Reminder ${id}: ${parseTime(dow, h, m)}`,
       ephemeral: true
     });
   }

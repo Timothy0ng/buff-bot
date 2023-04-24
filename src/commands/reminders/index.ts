@@ -1,6 +1,6 @@
 import { Subcommand } from "@kaname-png/plugin-subcommands-advanced";
 
-export const REMINDERS = "reminders";
+import { REMINDERS } from "../../lib/constants";
 
 export class ParentCommand extends Subcommand {
   public constructor(context: Subcommand.Context, options: Subcommand.Options) {
