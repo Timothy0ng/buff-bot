@@ -66,7 +66,7 @@ export class UserCommand extends Command {
     });
 
     return interaction.reply({
-      content: `<@${user_id}> has completed the following: https://discord.com/channels/${guild.id}/${channel_id}/${message_id}`
+      content: `<@${user_id}> has completed: https://discord.com/channels/${guild.id}/${channel_id}/${message_id}`
     });
   }
 }
